@@ -5,13 +5,15 @@ module FrameTree
 
   class Config
     attr_accessor :frame_length
-    attr_accessor :branches_num
+    attr_accessor :max_branches
     attr_accessor :data_path
+    attr_accessor :tree
 
     def initialize
       @frame_length = 6
-      @branches_num = 1
+      @max_branches = 1
       @data_path    = '/tmp'
+      @tree = nil
     end
   end
 

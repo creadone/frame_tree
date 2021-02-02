@@ -2,26 +2,33 @@ module FrameTree
   class Tree
     attr_reader :size
     attr_reader :name
+    attr_reader :statistics
     attr_accessor :branches
     attr_accessor :config
 
     def initialize(name, config = FrameTree.config)
       @config       = config
+      @config.tree  = self
       @name         = name
       @size         = 0
       @today        = Time.now.wday
       @branches     = {}
-      @branches_num = @config.branches_num
+      @max_branches = @config.max_branches
+      @statistics   = {
+        get: 0, set: 0, lookup: 0,
+      }
     end
 
     # Select and insert data
     def set(key, val = nil)
+      @statistics[:set] += 1
       with_branch_for(key) do |branch|
         branch.set key, val
       end
     end
 
     def get(key)
+      @statistics[:get] += 1
       with_branch_for(key) do |branch|
         branch.get key
       end
@@ -46,7 +53,7 @@ module FrameTree
     # Explore structure
     def to_table
       Helper.render do |rows, headings|
-        headings << ['ID', 'Size']
+        headings << ['Branch ID', 'Size']
         @branches.each do |(id, branch)|
           rows << [id, branch.size]
         end
@@ -92,7 +99,8 @@ module FrameTree
     private
 
     def hash(key)
-      key % @branches_num
+      @statistics[:lookup] += 1
+      key % @max_branches
     end
 
     def with_branch_for(key)
